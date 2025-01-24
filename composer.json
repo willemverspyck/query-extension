@@ -1,0 +1,41 @@
+{
+    "name": "spyck/query-extension",
+    "description": "Query extension for Symfony",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Willem Verspyck",
+            "email": "willemverspyck@outlook.com",
+            "homepage": "https://verspyck.com",
+            "role": "Developer"
+        }
+    ],
+    "keywords": [
+        "query",
+        "querybuilder",
+        "extension",
+        "php"
+    ],
+    "homepage": "https://github.com/willemverspyck/query-extension",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "doctrine/orm": "^2|^3"
+    },
+    "require-dev": {
+        "escapestudios/symfony2-coding-standard": "^3",
+        "friendsofphp/php-cs-fixer": "^3",
+        "phpunit/phpunit": "^10",
+        "squizlabs/php_codesniffer": "^3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Spyck\\QueryExtension\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spyck\\QueryExtension\\Tests\\": "tests/"
+        }
+    }
+}
