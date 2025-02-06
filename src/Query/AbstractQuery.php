@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\QueryExtension\Query;
 
-abstract class AbstractQuery
+abstract class AbstractQuery implements QueryInterface
 {
     private array $with = [];
     private array $select = [];
