@@ -14,25 +14,27 @@ abstract class AbstractQuery implements QueryInterface
     private array $groupBy = [];
     private array $having = [];
     private array $orderBy = [];
+    private ?int $limit = null;
+    private ?int $offset = null;
     private array $parameters = [];
 
-    public function getQuote(array $fields): string
+    public function getQuote(array|string $fields): string
     {
         return implode('.', array_map(function (string $field): string {
             return sprintf('`%s`', $field);
-        }, $fields));
+        }, is_array($fields) ? $fields : explode('.', $fields)));
     }
 
-    public function with(AbstractQuery $query, string $alias): self
+    public function with(AbstractQuery $query, array|string $table): self
     {
         $this->with = [];
 
-        return $this->addWith($query, $alias);
+        return $this->addWith($query, $table);
     }
 
-    public function addWith(AbstractQuery $query, string $alias): self
+    public function addWith(AbstractQuery $query, array|string $table): self
     {
-        $this->with[] = sprintf('`%s` AS (%s)', $alias, $query->getQuery());
+        $this->with[] = sprintf('%s AS (%s)', $this->getQuote($table), $query->getQuery());
 
         return $this;
     }
@@ -46,28 +48,28 @@ abstract class AbstractQuery implements QueryInterface
 
     public function addSelect(string $field, ?string $alias = null): self
     {
-        $this->select[] = null === $alias ? $field : sprintf('%s.%s', $alias, $field);
+        $this->select[] = null === $alias ? $field : sprintf('%s AS %s', $alias, $field);
 
         return $this;
     }
 
-    public function from(string $table, string $alias): self
+    public function from(array|string $table, string $alias): self
     {
-        $this->from = sprintf('`%s` AS `%s`', $table, $alias);
+        $this->from = sprintf('%s AS %s', $this->getQuote($table), $alias);
 
         return $this;
     }
 
-    public function innerJoin(string $table, string $alias, array $conditions): self
+    public function innerJoin(array|string $table, string $alias, array $conditions): self
     {
-        $this->join[] = sprintf('INNER JOIN `%s` AS `%s` ON %s', $table, $alias, $this->getCondition($conditions));
+        $this->join[] = sprintf('INNER JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
 
         return $this;
     }
 
-    public function leftJoin(string $table, string $alias, array $conditions): self
+    public function leftJoin(array|string $table, string $alias, array $conditions): self
     {
-        $this->join[] = sprintf('LEFT JOIN `%s` AS `%s` ON %s', $table, $alias, $this->getCondition($conditions));
+        $this->join[] = sprintf('LEFT JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
 
         return $this;
     }
@@ -86,30 +88,30 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function groupBy(string $field, ?string $alias = null): self
+    public function groupBy(string $field): self
     {
         $this->groupBy = [];
 
-        return $this->addGroupBy($field, $alias);
+        return $this->addGroupBy($field);
     }
 
-    public function addGroupBy(string $field, ?string $alias = null): self
+    public function addGroupBy(string $field): self
     {
-        $this->groupBy[] = null === $alias ? $field : sprintf('%s.%s', $alias, $field);
+        $this->groupBy[] = $field;
 
         return $this;
     }
 
-    public function having(string $field, ?string $alias = null): self
+    public function having(string $field): self
     {
         $this->having = [];
 
-        return $this->andHaving($field, $alias);
+        return $this->andHaving($field);
     }
 
-    public function andHaving(string $field, ?string $alias = null): self
+    public function andHaving(string $field): self
     {
-        $this->having[] = null === $alias ? $field : sprintf('%s.%s', $alias, $field);
+        $this->having[] = $field;
 
         return $this;
     }
@@ -126,6 +128,16 @@ abstract class AbstractQuery implements QueryInterface
         $this->orderBy[] = null === $direction ? $field : sprintf('%s %s', $field, $direction);
 
         return $this;
+    }
+
+    public function setLimit(?int $limit): self
+    {
+        $this->limit = $limit;
+    }
+
+    public function setOffset(?int $offset): self
+    {
+        $this->offset = $offset;
     }
 
     public function getQuery(): string
@@ -157,6 +169,14 @@ abstract class AbstractQuery implements QueryInterface
 
         if (count($this->orderBy) > 0) {
             $parts[] = sprintf('ORDER BY %s', implode(', ', $this->orderBy));
+        }
+
+        if (null !== $this->limit) {
+            $parts[] = sprintf('LIMIT %d', $this->limit);
+        }
+
+        if (null !== $this->offset) {
+            $parts[] = sprintf('OFFSET %d', $this->offset);
         }
 
         return implode(' ', $parts);
