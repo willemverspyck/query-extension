@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Spyck\QueryExtension\Query;
 
+use DateTimeInterface;
 use Spyck\QueryExtension\Parameter\Parameter;
 use Spyck\QueryExtension\Parameter\ParameterInterface;
 
@@ -189,7 +190,7 @@ abstract class AbstractQuery implements QueryInterface
         return implode(' ', $parts);
     }
 
-    public function addParameter(string $name, array|float|int|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
+    public function addParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
     {
         $this->parameters[] = new Parameter($name, $data, $type);
 

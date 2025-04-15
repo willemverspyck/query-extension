@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Spyck\QueryExtension\Parameter;
 
+use DateTimeInterface;
+
 final class Parameter implements ParameterInterface
 {
     private string $name;
     private array|float|int|string|null $data;
     private string $type;
 
-    public function __construct(string $name, array|float|int|string|null $data, string $type = ParameterInterface::TYPE_STRING)
+    public function __construct(string $name, array|DateTimeInterface|float|int|string|null $data, string $type = ParameterInterface::TYPE_STRING)
     {
         $this->setName($name);
         $this->setData($data);
@@ -29,12 +31,12 @@ final class Parameter implements ParameterInterface
         return $this;
     }
 
-    public function getData(): array|float|int|string|null
+    public function getData(): array|DateTimeInterface|float|int|string|null
     {
         return $this->data;
     }
 
-    public function setData(array|float|int|string|null $data): self
+    public function setData(array|DateTimeInterface|float|int|string|null $data): self
     {
         $this->data = $data;
 

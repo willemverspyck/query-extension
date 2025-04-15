@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Spyck\QueryExtension\Parameter;
 
+use DateTimeInterface;
+
 interface ParameterInterface
 {
     public const string TYPE_ARRAY = 'array';
@@ -19,9 +21,9 @@ interface ParameterInterface
 
     public function setName(string $name): self;
 
-    public function getData(): array|string|int|float|null;
+    public function getData(): array|DateTimeInterface|int|float|string|null;
 
-    public function setData(array|string|int|float|null $data): self;
+    public function setData(array|DateTimeInterface|int|float|string|null $data): self;
 
     public function getType(): string;
 
