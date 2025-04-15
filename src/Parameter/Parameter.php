@@ -9,7 +9,7 @@ use DateTimeInterface;
 final class Parameter implements ParameterInterface
 {
     private string $name;
-    private array|float|int|string|null $data;
+    private array|DateTimeInterface|float|int|string|null $data;
     private string $type;
 
     public function __construct(string $name, array|DateTimeInterface|float|int|string|null $data, string $type = ParameterInterface::TYPE_STRING)
