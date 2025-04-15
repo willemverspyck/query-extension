@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Spyck\QueryExtension\Query;
 
+use Spyck\QueryExtension\Parameter\Parameter;
+use Spyck\QueryExtension\Parameter\ParameterInterface;
+
 abstract class AbstractQuery implements QueryInterface
 {
     private array $with = [];
@@ -133,11 +136,15 @@ abstract class AbstractQuery implements QueryInterface
     public function setLimit(?int $limit): self
     {
         $this->limit = $limit;
+
+        return $this;
     }
 
     public function setOffset(?int $offset): self
     {
         $this->offset = $offset;
+
+        return $this;
     }
 
     public function getQuery(): string
@@ -182,9 +189,9 @@ abstract class AbstractQuery implements QueryInterface
         return implode(' ', $parts);
     }
 
-    public function addParameter(string $name, mixed $value): self
+    public function addParameter(string $name, array|float|int|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
     {
-        $this->parameters[$name] = $value;
+        $this->parameters[] = new Parameter($name, $data, $type);
 
         return $this;
     }
