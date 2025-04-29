@@ -57,7 +57,7 @@ abstract class AbstractQuery implements QueryInterface
 
     public function addSelect(string $field, ?string $alias = null): self
     {
-        $this->select[] = null === $alias ? $field : sprintf('%s AS %s', $alias, $field);
+        $this->select[] = null === $alias ? $field : sprintf('%s AS %s', $field, $alias);
 
         return $this;
     }
