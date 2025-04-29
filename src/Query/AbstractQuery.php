@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Spyck\QueryExtension\Query;
 
 use DateTimeInterface;
+use Spyck\QueryExtension\Exception\ParameterException;
 use Spyck\QueryExtension\Parameter\Parameter;
 use Spyck\QueryExtension\Parameter\ParameterInterface;
 
@@ -194,17 +195,16 @@ abstract class AbstractQuery implements QueryInterface
         return implode(' ', $parts);
     }
 
-    public function setParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
-    {
-        $this->parameters[$name] = new Parameter($name, $data, $type);
-
-        return $this;
-    }
-
-    /** @deprecated Replace with setParameter */
+    /**
+     * @throws ParameterException
+     */
     public function addParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
     {
-        $this->parameters[] = new Parameter($name, $data, $type);
+        if (array_key_exists($name, $this->parameters)) {
+            throw new ParameterException(sprintf('Parameter "%s" already exists', $name));
+        }
+
+        $this->parameters[$name] = new Parameter($name, $data, $type);
 
         return $this;
     }
