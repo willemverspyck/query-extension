@@ -30,6 +30,9 @@ abstract class AbstractQuery implements QueryInterface
         }, is_array($fields) ? $fields : explode('.', $fields)));
     }
 
+    /**
+     * @throws ParameterException
+     */
     public function with(QueryInterface $query, array|string $table): self
     {
         $this->with = [];
@@ -37,12 +40,15 @@ abstract class AbstractQuery implements QueryInterface
         return $this->addWith($query, $table);
     }
 
+    /**
+     * @throws ParameterException
+     */
     public function addWith(QueryInterface $query, array|string $table): self
     {
         $this->with[] = sprintf('%s AS (%s)', $this->getQuote($table), $query->getQuery());
 
         foreach ($query->getParameters() as $parameter) {
-            $this->setParameter($parameter->getName(), $parameter->getData(), $parameter->getType());
+            $this->addParameter($parameter->getName(), $parameter->getData(), $parameter->getType());
         }
 
         return $this;
