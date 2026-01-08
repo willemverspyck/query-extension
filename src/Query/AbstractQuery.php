@@ -33,7 +33,7 @@ abstract class AbstractQuery implements QueryInterface
     /**
      * @throws ParameterException
      */
-    public function with(QueryInterface $query, array|string $table): self
+    public function with(QueryInterface $query, array|string $table): static
     {
         $this->with = [];
 
@@ -43,7 +43,7 @@ abstract class AbstractQuery implements QueryInterface
     /**
      * @throws ParameterException
      */
-    public function addWith(QueryInterface $query, array|string $table): self
+    public function addWith(QueryInterface $query, array|string $table): static
     {
         $this->with[] = sprintf('%s AS (%s)', $this->getQuote($table), $query->getQuery());
 
@@ -54,107 +54,121 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function select(string $field, ?string $alias = null): self
+    public function select(string $field, ?string $alias = null): static
     {
         $this->select = [];
 
         return $this->addSelect($field, $alias);
     }
 
-    public function addSelect(string $field, ?string $alias = null): self
+    public function addSelect(string $field, ?string $alias = null): static
     {
         $this->select[] = null === $alias ? $field : sprintf('%s AS %s', $field, $alias);
 
         return $this;
     }
 
-    public function from(array|string $table, string $alias): self
+    public function from(array|string $table, string $alias): static
     {
         $this->from = sprintf('%s AS %s', $this->getQuote($table), $alias);
 
         return $this;
     }
 
-    public function innerJoin(array|string $table, string $alias, array $conditions): self
+    public function innerJoin(array|string $table, string $alias, array $conditions): static
     {
         $this->join[] = sprintf('INNER JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
 
         return $this;
     }
 
-    public function leftJoin(array|string $table, string $alias, array $conditions): self
+    public function leftJoin(array|string $table, string $alias, array $conditions): static
     {
         $this->join[] = sprintf('LEFT JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
 
         return $this;
     }
 
-    public function where(string $condition): self
+    public function where(string $condition): static
     {
         $this->where = [];
 
         return $this->andWhere($condition);
     }
 
-    public function andWhere(string $condition): self
+    public function andWhere(string $condition): static
     {
         $this->where[] = sprintf('(%s)', $condition);
 
         return $this;
     }
 
-    public function groupBy(string $field): self
+    public function groupBy(string $field): static
     {
         $this->groupBy = [];
 
         return $this->addGroupBy($field);
     }
 
-    public function addGroupBy(string $field): self
+    public function addGroupBy(string $field): static
     {
         $this->groupBy[] = $field;
 
         return $this;
     }
 
-    public function having(string $field): self
+    public function having(string $field): static
     {
         $this->having = [];
 
         return $this->andHaving($field);
     }
 
-    public function andHaving(string $field): self
+    public function andHaving(string $field): static
     {
         $this->having[] = $field;
 
         return $this;
     }
 
-    public function orderBy(string $field, ?string $direction = null): self
+    public function orderBy(string $field, ?string $direction = null): static
     {
         $this->orderBy = [];
 
         return $this->addOrderBy($field, $direction);
     }
 
-    public function addOrderBy(string $field, ?string $direction = null): self
+    public function addOrderBy(string $field, ?string $direction = null): static
     {
         $this->orderBy[] = null === $direction ? $field : sprintf('%s %s', $field, $direction);
 
         return $this;
     }
 
-    public function setLimit(?int $limit): self
+    public function setLimit(?int $limit): static
     {
         $this->limit = $limit;
 
         return $this;
     }
 
-    public function setOffset(?int $offset): self
+    public function setOffset(?int $offset): static
     {
         $this->offset = $offset;
+
+        return $this;
+    }
+
+    /**
+     * @throws ParameterException
+     */
+    public function addParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): static
+    {
+        if (array_key_exists($name, $this->parameters)) {
+            throw new ParameterException(sprintf('Parameter "%s" already exists', $name));
+        }
+
+        $this->parameters[$name] = new Parameter($name, $data, $type);
 
         return $this;
     }
@@ -199,20 +213,6 @@ abstract class AbstractQuery implements QueryInterface
         }
 
         return implode(' ', $parts);
-    }
-
-    /**
-     * @throws ParameterException
-     */
-    public function addParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): self
-    {
-        if (array_key_exists($name, $this->parameters)) {
-            throw new ParameterException(sprintf('Parameter "%s" already exists', $name));
-        }
-
-        $this->parameters[$name] = new Parameter($name, $data, $type);
-
-        return $this;
     }
 
     public function getParameters(): array
