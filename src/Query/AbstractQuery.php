@@ -23,11 +23,15 @@ abstract class AbstractQuery implements QueryInterface
     private ?int $offset = null;
     private array $parameters = [];
 
-    public function getQuote(array|string $fields): string
+    public function getQuote(array|string $fields, bool $quote = false): string
     {
-        return implode('.', array_map(function (string $field): string {
-            return sprintf('`%s`', $field);
-        }, is_array($fields) ? $fields : explode('.', $fields)));
+        if ($quote) {
+            return implode('.', array_map(function (string $field): string {
+                return sprintf('`%s`', $field);
+            }, is_array($fields) ? $fields : explode('.', $fields)));
+        }
+
+        return is_array($fields) ? implode('.', $fields) : $fields;
     }
 
     /**
@@ -54,37 +58,37 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function select(string $field, ?string $alias = null): static
+    public function select(array|string $field, ?string $alias = null, bool $quote = false): static
     {
         $this->select = [];
 
-        return $this->addSelect($field, $alias);
+        return $this->addSelect($field, $alias, $quote);
     }
 
-    public function addSelect(string $field, ?string $alias = null): static
+    public function addSelect(array|string $field, ?string $alias = null, bool $quote = false): static
     {
-        $this->select[] = null === $alias ? $field : sprintf('%s AS %s', $field, $alias);
+        $this->select[] = null === $alias ? $this->getQuote($field, $quote) : sprintf('%s AS %s', $this->getQuote($field, $quote), $alias);
 
         return $this;
     }
 
-    public function from(array|string $table, string $alias): static
+    public function from(array|string $table, string $alias, bool $quote = false): static
     {
-        $this->from = sprintf('%s AS %s', $this->getQuote($table), $alias);
+        $this->from = sprintf('%s AS %s', $this->getQuote($table, $quote), $alias);
 
         return $this;
     }
 
-    public function innerJoin(array|string $table, string $alias, array $conditions): static
+    public function innerJoin(array|string $table, string $alias, array $conditions, bool $quote = false): static
     {
-        $this->join[] = sprintf('INNER JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
+        $this->join[] = sprintf('INNER JOIN %s AS %s ON %s', $this->getQuote($table, $quote), $alias, $this->getCondition($conditions));
 
         return $this;
     }
 
-    public function leftJoin(array|string $table, string $alias, array $conditions): static
+    public function leftJoin(array|string $table, string $alias, array $conditions, bool $quote = false): static
     {
-        $this->join[] = sprintf('LEFT JOIN %s AS %s ON %s', $this->getQuote($table), $alias, $this->getCondition($conditions));
+        $this->join[] = sprintf('LEFT JOIN %s AS %s ON %s', $this->getQuote($table, $quote), $alias, $this->getCondition($conditions));
 
         return $this;
     }
@@ -103,44 +107,44 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function groupBy(string $field): static
+    public function groupBy(array|string $field, bool $quote = false): static
     {
         $this->groupBy = [];
 
-        return $this->addGroupBy($field);
+        return $this->addGroupBy($field, $quote);
     }
 
-    public function addGroupBy(string $field): static
+    public function addGroupBy(array|string $field, bool $quote = false): static
     {
-        $this->groupBy[] = $field;
+        $this->groupBy[] = $this->getQuote($field, $quote);
 
         return $this;
     }
 
-    public function having(string $field): static
+    public function having(array|string $field, bool $quote = false): static
     {
         $this->having = [];
 
-        return $this->andHaving($field);
+        return $this->andHaving($field, $quote);
     }
 
-    public function andHaving(string $field): static
+    public function andHaving(array|string $field, bool $quote = false): static
     {
-        $this->having[] = $field;
+        $this->having[] = $this->getQuote($field, $quote);
 
         return $this;
     }
 
-    public function orderBy(string $field, ?string $direction = null): static
+    public function orderBy(array|string $field, ?string $direction = null, bool $quote = false): static
     {
         $this->orderBy = [];
 
-        return $this->addOrderBy($field, $direction);
+        return $this->addOrderBy($field, $direction, $quote);
     }
 
-    public function addOrderBy(string $field, ?string $direction = null): static
+    public function addOrderBy(array|string $field, ?string $direction = null, bool $quote = false): static
     {
-        $this->orderBy[] = null === $direction ? $field : sprintf('%s %s', $field, $direction);
+        $this->orderBy[] = null === $direction ? $this->getQuote($field) : sprintf('%s %s', $this->getQuote($field), $direction);
 
         return $this;
     }
