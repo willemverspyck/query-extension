@@ -172,6 +172,11 @@ abstract class AbstractQuery implements QueryInterface
             throw new ParameterException(sprintf('Parameter "%s" already exists', $name));
         }
 
+        return $this->setParameter($name, $data, $type);
+    }
+
+    public function setParameter(string $name, array|DateTimeInterface|int|float|string|null $data, string $type = ParameterInterface::TYPE_STRING): static
+    {
         $this->parameters[$name] = new Parameter($name, $data, $type);
 
         return $this;
