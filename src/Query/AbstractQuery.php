@@ -93,16 +93,18 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function where(string $condition): static
+    public function where(?string $condition): static
     {
         $this->where = [];
 
         return $this->andWhere($condition);
     }
 
-    public function andWhere(string $condition): static
+    public function andWhere(?string $condition): static
     {
-        $this->where[] = sprintf('(%s)', $condition);
+        if (null !== $condition) {
+            $this->where[] = sprintf('(%s)', $condition);
+        }
 
         return $this;
     }
@@ -121,16 +123,18 @@ abstract class AbstractQuery implements QueryInterface
         return $this;
     }
 
-    public function having(array|string $field, bool $quote = false): static
+    public function having(?string $condition): static
     {
         $this->having = [];
 
-        return $this->andHaving($field, $quote);
+        return $this->andHaving($condition);
     }
 
-    public function andHaving(array|string $field, bool $quote = false): static
+    public function andHaving(?string $condition): static
     {
-        $this->having[] = $this->getQuote($field, $quote);
+        if (null !== $condition) {
+            $this->having[] = sprintf('(%s)', $condition);
+        }
 
         return $this;
     }
@@ -206,7 +210,7 @@ abstract class AbstractQuery implements QueryInterface
         }
 
         if (count($this->having) > 0) {
-            $parts[] = sprintf('HAVING %s', implode(', ', $this->having));
+            $parts[] = sprintf('HAVING %s', implode(' AND ', $this->having));
         }
 
         if (count($this->orderBy) > 0) {
