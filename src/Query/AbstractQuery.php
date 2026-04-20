@@ -13,7 +13,7 @@ abstract class AbstractQuery implements QueryInterface
 {
     private array $with = [];
     private array $select = [];
-    private string $from;
+    private ?string $from = null;
     private array $join = [];
     private array $where = [];
     private array $groupBy = [];
@@ -195,7 +195,10 @@ abstract class AbstractQuery implements QueryInterface
         }
 
         $parts[] = sprintf('SELECT %s', implode(', ', $this->select));
-        $parts[] = sprintf('FROM %s', $this->from);
+
+        if (null !== $this->from) {
+            $parts[] = sprintf('FROM %s', $this->from);
+        }
 
         if (count($this->join) > 0) {
             $parts = array_merge($parts, $this->join);
